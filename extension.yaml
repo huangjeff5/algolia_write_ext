@@ -1,0 +1,118 @@
+# Learn detailed information about the fields of an extension.yaml file in the docs
+
+name: algolia-write-ext  # Identifier for the extension
+specVersion: v1beta  # Version of the Firebase Extensions specification
+version: 0.0.1  # Follow semver versioning
+license: Apache-2.0  # https://spdx.org/licenses/
+
+# Friendly display name for your extension (~3-5 words)
+displayName: Algolia Import Extension
+
+# Brief description of the task your extension performs (~1 sentence)
+description: >-
+  Writes data from a specified Firestore collection into Algolia.
+
+billingRequired: false  # Learn more in the docs
+
+# For your extension to interact with other Google APIs (like Firestore, Cloud Storage, or Cloud Translation),
+# set the `apis` field. In addition, set the `roles` field to grant appropriate IAM access to interact with these products.
+# Learn about these fields in the docs
+
+roles:
+  - role: datastore.viewer
+    reason: This extension needs read access to Firestore collections designated to be imported into Algolia. 
+
+# Learn about the `resources` field in the docs
+resources:
+  - name: onDocumentCreated
+    type: firebaseextensions.v1beta.function
+    description: >-
+      Cloud function triggered on Firestore document creation. Imports document into Algolia. 
+    properties:
+      # sourceDirectory + location were copied over from https://github.com/firebase/extensions/blob/mb-twilio/firestore-bigquery-export/extension.yaml
+      # Not exactly sure what it does. Just leaving this in temporarily to see if it makes a difference.
+      location: ${LOCATION}
+      eventTrigger:
+        eventType: providers/cloud.firestore/eventTypes/document.create
+        # DATABASE_INSTANCE (project's default instance) is an auto-populated parameter value.
+        # DB_PATH is a user-provided parameter value provided by the user during installation.
+        resource: projects/${PROJECT_ID}/databases/(default)/documents/${FIRESTORE_COLLECTION_TO_INDEX}/{documentId}
+
+# Learn about the `params` field in the docs
+params:
+  - param: ALGOLIA_ID
+    type: string
+    label: Algolia ID
+    description: >-
+      What's your Algolia ID?
+    default: ${param:STORAGE_BUCKET}
+    required: true
+    immutable: false
+
+  - param: ALGOLIA_ADMIN_KEY
+    type: string
+    label: Algolia admin key
+    description: >-
+      What's your Algolia Admin API Key?
+    required: true
+    immutable: false
+
+  - param: FIRESTORE_COLLECTION_TO_INDEX
+    type: string
+    label: Firestore collection name
+    description: >-
+      What's the Firestore collection you want to index inside of Algolia?
+    required: true
+    immutable: false
+
+  - param: ALGOLIA_INDEX_NAME
+    type: string
+    label: Algolia index name
+    description: >-
+      What's the name of the Algolia index you want to write to?
+    required: true
+    immutable: false
+
+  - param: ALGOLIA_SEARCHABLE_ATTRIBUTES
+    type: string
+    label: Algolia searchable attributes
+    description: >-
+      What are the searchable attributes? (Please specify them as a comma-separated list.)
+    default: ""
+    required: true
+    immutable: false
+
+  - param: ALGOLIA_CUSTOM_RANKING
+    type: string
+    label: Algolia custom ranking
+    description: >-
+      Is there any custom ranking you'd like to set? (Please specify them as a comma-separated list.)
+    default: ""
+    required: true
+    immutable: false
+
+  - param: LOCATION
+    type: select
+    label: Cloud Functions location
+    description: >-
+      Where do you want to deploy the functions created for this extension? For help selecting a
+      location, refer to the [location selection
+      guide](https://firebase.google.com/docs/functions/locations).
+    options:
+      - label: Iowa (us-central1)
+        value: us-central1
+      - label: South Carolina (us-east1)
+        value: us-east1
+      - label: Northern Virginia (us-east4)
+        value: us-east4
+      - label: Belgium (europe-west1)
+        value: europe-west1
+      - label: London (europe-west2)
+        value: europe-west2
+      - label: Hong Kong (asia-east2)
+        value: asia-east2
+      - label: Tokyo (asia-northeast1)
+        value: asia-northeast1
+    default: us-central1
+    required: true
+    immutable: true
